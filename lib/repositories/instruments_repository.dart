@@ -4,6 +4,7 @@ for one or more payments
 */
 import 'dart:convert';
 
+import 'package:checkout_api/utils/api_base.dart';
 import 'package:http/http.dart' as http;
 
 import '../lib.dart';
@@ -32,70 +33,45 @@ abstract class BaseInstrumentRepository {
 
 class HttpInstrumentRepository extends BaseInstrumentRepository {
   final headers;
-  final String instrumentUri;
+  static const instruments = "instruments";
+  final ApiBase apiBase;
 
-  HttpInstrumentRepository(
-      {required this.headers, required this.instrumentUri});
+  HttpInstrumentRepository({required this.headers, required this.apiBase});
 
   @override
   Future<Instrument> createInstrument(
       {required InstrumentRequest instrumentRequest}) async {
     //
-    http.Response response = await http.post(Uri.parse(instrumentUri),
-        headers: headers, body: instrumentRequest.toJson());
+    Map<String, dynamic> responseMap = await apiBase.call(RESTOption.post,
+        resource: instruments,
+        headers: headers,
+        body: instrumentRequest.toJson());
 
-    switch (response.statusCode) {
-      case 201:
-        return Instrument.fromJson(response.body);
-
-      case 401:
-        throw Exception("unauthorized: ${response.body}");
-
-      case 422:
-        throw Exception("invalid data was sent: ${response.body}");
-
-      default:
-        throw Exception(response.body);
-    }
+    return Instrument.fromMap(responseMap);
   }
 
   @override
   Future<bool> deleteInstrument(String id) async {
     //
-    http.Response response = await http.delete(
-      Uri.parse(instrumentUri + "/" + id),
+    await apiBase.call(
+      RESTOption.delete,
+      resource: instruments + "/" + id,
       headers: headers,
     );
-    switch (response.statusCode) {
-      case 204:
-        return true;
 
-      default:
-        return false;
-    }
+    return true;
   }
 
   @override
   Future<Instrument> getInstrumentDetails(String id) async {
     //
-    http.Response response = await http.get(
-      Uri.parse(instrumentUri + "/" + id),
+    Map<String, dynamic> responseMap = await apiBase.call(
+      RESTOption.get,
+      resource: instruments + "/" + id,
       headers: headers,
     );
 
-    switch (response.statusCode) {
-      case 200:
-        return Instrument.fromJson(response.body);
-
-      case 401:
-        throw Exception("unauthorized: ${response.body}");
-
-      case 404:
-        throw Exception("instrument not found: ${response.body}");
-
-      default:
-        throw Exception(": ${response.body}");
-    }
+    return Instrument.fromMap(responseMap);
   }
 
   @override
@@ -103,31 +79,18 @@ class HttpInstrumentRepository extends BaseInstrumentRepository {
     required Instrument instrument,
     required InstrumentRequest instrumentRequest,
   }) async {
-    http.Response response = await http.patch(
-      Uri.parse(instrumentUri + "/" + instrumentRequest.id!),
+    Map responseMap = await apiBase.call(
+      RESTOption.patch,
+      resource: instruments + "/" + instrumentRequest.id!,
       headers: headers,
       body: instrumentRequest.toJson(),
     );
 
-    switch (response.statusCode) {
-      case 200:
-        final responseJson = jsonDecode(response.body);
-
-        return instrument.copyWith(
-            fingerprint: responseJson["fingerprint"],
-            expiryMonth: instrumentRequest.expiryMonth,
-            isDefault: instrumentRequest.isDefault,
-            expiryYear: instrumentRequest.expiryYear);
-
-      case 401:
-        throw Exception("unauthorized: ${response.body}");
-
-      case 404:
-        throw Exception("instrument not found: ${response.body}");
-
-      default:
-        throw Exception(": ${response.body}");
-    }
+    return instrument.copyWith(
+        fingerprint: responseMap["fingerprint"],
+        expiryMonth: instrumentRequest.expiryMonth,
+        isDefault: instrumentRequest.isDefault,
+        expiryYear: instrumentRequest.expiryYear);
   }
 
   Future<Instrument?> getDefaultInstrument(List<Instrument> instruments) async {

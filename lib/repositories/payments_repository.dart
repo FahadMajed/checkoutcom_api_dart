@@ -1,3 +1,4 @@
+import 'package:checkout_api/utils/api_base.dart';
 import 'package:http/http.dart' as http;
 
 import '../lib.dart';
@@ -36,16 +37,13 @@ abstract class BasePaymentsRepository {
 }
 
 class HttpPaymentsRepository implements BasePaymentsRepository {
-  final String paymentURI;
-
   final HttpTokensRepository tokensRepo;
   final headers;
+  static const payments = "payments";
 
-  HttpPaymentsRepository({
-    required this.paymentURI,
-    required this.tokensRepo,
-    required this.headers,
-  });
+  final ApiBase apiBase;
+  HttpPaymentsRepository(
+      {required this.tokensRepo, required this.headers, required this.apiBase});
 
   @override
   Future<PaymentResponse> requestTokenPayment({
@@ -60,19 +58,14 @@ class HttpPaymentsRepository implements BasePaymentsRepository {
       card: card,
     );
 
-    http.Response response = await http.post(
-      Uri.parse(paymentURI),
+    Map<String, dynamic> response = await apiBase.call(
+      RESTOption.post,
+      resource: payments,
       headers: headers,
       body: paymentRequest.copyWith(token: token).toJson(),
     );
 
-    switch (response.statusCode) {
-      case 201:
-        return PaymentResponse.fromJson(response.body);
-
-      default:
-        throw Exception("Error: ${response.statusCode}");
-    }
+    return PaymentResponse.fromMap(response);
   }
 
   Future<String> _tokenize(
@@ -94,25 +87,21 @@ class HttpPaymentsRepository implements BasePaymentsRepository {
 
   @override
   Future<PaymentResponse> getPaymentDetails(String id) async {
-    http.Response response = await http.get(
-      Uri.parse(paymentURI + "/" + id),
+    http.Response response = await apiBase.call(
+      RESTOption.get,
+      resource: payments,
       headers: headers,
     );
 
-    switch (response.statusCode) {
-      case 200:
-        return PaymentResponse.fromJson(response.body);
-
-      default:
-        throw Exception("Error: ${response.statusCode}");
-    }
+    return PaymentResponse.fromJson(response.body);
   }
 
   @override
   Future<PaymentResponse> requestIdPayment(
       {required PaymentRequest paymentRequest}) async {
-    http.Response response = await http.post(
-      Uri.parse(paymentURI),
+    http.Response response = await apiBase.call(
+      RESTOption.post,
+      resource: payments,
       headers: headers,
       body: paymentRequest.toJson(),
     );
@@ -124,7 +113,7 @@ class HttpPaymentsRepository implements BasePaymentsRepository {
       case 202:
         return PaymentResponse3DS.fromJson(response.body);
       default:
-        throw Exception("Error: ${response.statusCode}");
+        return PaymentResponse.fromJson(response.body);
     }
   }
 }

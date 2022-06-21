@@ -1,30 +1,32 @@
 import 'package:riverpod/riverpod.dart';
 
-
-import '../models/customers/customer.dart';
 import '../repositories/repositories.dart';
+import '../utils/api_base.dart';
 
 final paymentApiPubKeyPvdr = Provider<String>((ref) => "");
 final paymentApiSecretKeyPvdr = Provider<String>((ref) => "");
-final paymentsUriPvdr = Provider<String>((ref) => "");
-final tokensUriPvdr = Provider<String>((ref) => "");
-final instrumentsUriPvdr = Provider<String>((ref) => "");
-final customersUriPvdr = Provider<String>((ref) => "");
+final paymentsUriPvdr = Provider<String>((ref) => "payments");
+final tokensUriPvdr = Provider<String>((ref) => "tokens");
+final instrumentsUriPvdr = Provider<String>((ref) => "instruments");
+final customersUriPvdr = Provider<String>((ref) => "customers");
+final baseUri = Provider<String>((ref) => "https://api.sandbox.checkout.com/");
+
+final apiBasePvdr = Provider((ref) => ApiBase(ref.read(baseUri)));
 
 final paymentsRepoPvdr = Provider(
   (ref) => HttpPaymentsRepository(
-    paymentURI: ref.read(paymentsUriPvdr),
     headers: {
       'Content-Type': 'Application/json',
       'Authorization': ref.read(paymentApiSecretKeyPvdr)
     },
+    apiBase: ref.read(apiBasePvdr),
     tokensRepo: ref.read(tokensRepoPvdr),
   ),
 );
 
 final tokensRepoPvdr = Provider(
   (ref) => HttpTokensRepository(
-    tokensUri: ref.read(tokensUriPvdr),
+    apiBase: ref.read(apiBasePvdr),
     headers: {
       'Content-Type': 'Application/json',
       'Authorization': ref.read(paymentApiPubKeyPvdr)
@@ -38,7 +40,7 @@ final instrumentsRepoPvdr = Provider(
       'Content-Type': 'Application/json',
       'Authorization': ref.read(paymentApiSecretKeyPvdr)
     },
-    instrumentUri: ref.read(instrumentsUriPvdr),
+    apiBase: ref.read(apiBasePvdr),
   ),
 );
 
@@ -48,6 +50,6 @@ final customersRepoPvdr = Provider(
       'Content-Type': 'Application/json',
       'Authorization': ref.read(paymentApiSecretKeyPvdr)
     },
-    customersUri: ref.read(customersUriPvdr),
+    apiBase: ref.read(apiBasePvdr),
   ),
 );

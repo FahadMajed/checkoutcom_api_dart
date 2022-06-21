@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:checkout_api/lib.dart';
+import 'package:checkout_api/utils/api_base.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:checkout_api/checkout_api.dart';
@@ -21,10 +22,12 @@ void main() async {
     instrumentsUri = "https://api.sandbox.checkout.com/instruments";
     customersUri = "https://api.sandbox.checkout.com/customers";
 
-    final customersRepository = HttpCustomersRepository(headers: {
-      'Content-Type': 'Application/json',
-      'Authorization': secretKey
-    }, customersUri: customersUri);
+    final apiBase = ApiBase("https://api.sandbox.checkout.com/");
+
+    final customersRepository = HttpCustomersRepository(
+      headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
+      apiBase: apiBase,
+    );
 
     final randomNumber = Random().nextInt(3000000);
     Customer customer = Customer(
@@ -41,11 +44,13 @@ void main() async {
       expect(customer.id!.isNotEmpty, true);
     });
 
-    final HttpTokensRepository tokensRepository =
-        HttpTokensRepository(headers: {
-      'Content-Type': 'Application/json',
-      'Authorization': pubKey,
-    }, tokensUri: tokensUri);
+    final HttpTokensRepository tokensRepository = HttpTokensRepository(
+      headers: {
+        'Content-Type': 'Application/json',
+        'Authorization': pubKey,
+      },
+      apiBase: apiBase,
+    );
 
     String token = "";
     final CreditCard card = CreditCard(
@@ -68,10 +73,10 @@ void main() async {
     });
 
     final HttpInstrumentRepository instrumentRepository =
-        HttpInstrumentRepository(headers: {
-      'Content-Type': 'Application/json',
-      'Authorization': secretKey
-    }, instrumentUri: instrumentsUri);
+        HttpInstrumentRepository(
+      headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
+      apiBase: apiBase,
+    );
 
     String instrumentId = "";
 
@@ -108,8 +113,8 @@ void main() async {
 
     final HttpPaymentsRepository paymentsRepository = HttpPaymentsRepository(
       headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
-      paymentURI: paymentsUri,
       tokensRepo: tokensRepository,
+      apiBase: apiBase,
     );
 
     test("pay", () async {

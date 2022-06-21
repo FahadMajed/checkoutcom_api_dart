@@ -1,3 +1,4 @@
+import 'package:checkout_api/utils/api_base.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/tokens/token_request.dart';
@@ -17,33 +18,23 @@ abstract class TokensRepository {
 
 class HttpTokensRepository implements TokensRepository {
   final headers;
-  final String tokensUri;
+  final ApiBase apiBase;
+  static const tokens = "tokens";
 
   HttpTokensRepository({
     required this.headers,
-    required this.tokensUri,
+    required this.apiBase,
   });
 
   @override
   Future<TokenResponse> requestToken(TokenRequest tokenRequest) async {
-    http.Response response = await http.post(
-      Uri.parse(tokensUri),
+    Map responseMap = await apiBase.call(
+      RESTOption.post,
+      resource: tokens,
       headers: headers,
       body: tokenRequest.toJson(),
     );
 
-    switch (response.statusCode) {
-      case 201:
-        return TokenResponse.fromJson(response.body);
-
-      case 401:
-        throw Exception("unauthorized");
-
-      case 422:
-        throw Exception("invalid data was sent: ${response.statusCode}");
-
-      default:
-        throw Exception("Error: ${response.statusCode}");
-    }
+    return TokenResponse.fromMap(responseMap);
   }
 }

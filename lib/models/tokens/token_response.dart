@@ -21,7 +21,7 @@ class TokenResponse {
     };
   }
 
-  factory TokenResponse.fromMap(Map<String, dynamic> map) {
+  factory TokenResponse.fromMap(Map map) {
     return TokenResponse(
       card: CreditCard.fromJson(json.encode(map)),
       token: map['token'] ?? '',
