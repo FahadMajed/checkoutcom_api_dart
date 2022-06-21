@@ -1,0 +1,130 @@
+import 'package:http/http.dart' as http;
+
+import '../lib.dart';
+
+///To accept payments from cards, digital wallets and many alternative
+///payment methods, specify the source.type field, along with
+///the source-specific data.
+///
+///To pay out to a card, specify the destination
+///of your payout using the destination.type field, along with the destination-specific data.
+///
+///To verify the success of the payment,
+///check the approved field in the response.
+
+abstract class BasePaymentsRepository {
+  /// pay using The Checkout.com token (e.g., a card or digital wallet token)
+  Future<PaymentResponse> requestTokenPayment(
+      {required PaymentRequest paymentRequest,
+      ApplePayTokenData applePayTokenData,
+      required PaymentMethod method});
+
+  ///Returns the details of the payment with the specified identifier string.
+  ///
+  /// If the payment method requires a redirection to a third party (e.g., 3D Secure),
+  ///  the redirect URL back to your site will include a
+  /// cko-session-id query parameter containing a payment
+  /// session ID that can be used to obtain the details of the payment,
+  /// for example:
+  /// http://example.com/success?cko-session-id=sid_ubfj2q76miwundwlk72vxt2i7q
+  Future<PaymentResponse> getPaymentDetails(String id);
+
+//pay using The payment source identifer (e.g., a card source identifier)
+  Future<PaymentResponse> requestIdPayment({
+    required PaymentRequest paymentRequest,
+  });
+}
+
+class HttpPaymentsRepository implements BasePaymentsRepository {
+  final String paymentURI;
+
+  final HttpTokensRepository tokensRepo;
+  final headers;
+
+  HttpPaymentsRepository({
+    required this.paymentURI,
+    required this.tokensRepo,
+    required this.headers,
+  });
+
+  @override
+  Future<PaymentResponse> requestTokenPayment({
+    required PaymentRequest paymentRequest,
+    CreditCard? card,
+    ApplePayTokenData? applePayTokenData,
+    required PaymentMethod method,
+  }) async {
+    final token = await _tokenize(
+      method,
+      applePayTokenData: applePayTokenData,
+      card: card,
+    );
+
+    http.Response response = await http.post(
+      Uri.parse(paymentURI),
+      headers: headers,
+      body: paymentRequest.copyWith(token: token).toJson(),
+    );
+
+    switch (response.statusCode) {
+      case 201:
+        return PaymentResponse.fromJson(response.body);
+
+      default:
+        throw Exception("Error: ${response.statusCode}");
+    }
+  }
+
+  Future<String> _tokenize(
+    PaymentMethod method, {
+    ApplePayTokenData? applePayTokenData,
+    CreditCard? card,
+  }) async {
+    //
+    final tokenRequest = TokenRequest(
+      type: method,
+      walletTokenData: applePayTokenData,
+      card: card,
+    );
+
+    final tokenResponse = await tokensRepo.requestToken(tokenRequest);
+
+    return tokenResponse.token;
+  }
+
+  @override
+  Future<PaymentResponse> getPaymentDetails(String id) async {
+    http.Response response = await http.get(
+      Uri.parse(paymentURI + "/" + id),
+      headers: headers,
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        return PaymentResponse.fromJson(response.body);
+
+      default:
+        throw Exception("Error: ${response.statusCode}");
+    }
+  }
+
+  @override
+  Future<PaymentResponse> requestIdPayment(
+      {required PaymentRequest paymentRequest}) async {
+    http.Response response = await http.post(
+      Uri.parse(paymentURI),
+      headers: headers,
+      body: paymentRequest.toJson(),
+    );
+
+    switch (response.statusCode) {
+      case 201:
+        return PaymentResponse.fromJson(response.body);
+
+      case 202:
+        return PaymentResponse3DS.fromJson(response.body);
+      default:
+        throw Exception("Error: ${response.statusCode}");
+    }
+  }
+}
