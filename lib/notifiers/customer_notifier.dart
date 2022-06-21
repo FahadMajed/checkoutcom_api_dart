@@ -12,7 +12,6 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
   ///email address, e.g. FirebaseAuth user email
   final String customerId;
   final String name;
-  final Reader read;
 
   CustomerNotifier({
     required this.customersRepo,
@@ -20,7 +19,6 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
     required this.tokensRepo,
     required this.customerId,
     required this.name,
-    required this.read,
   }) : super(const AsyncValue.loading()) {
     if (customerId.isNotEmpty) {
       getCustomerDetails(customerId);

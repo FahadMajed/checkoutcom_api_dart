@@ -5,6 +5,7 @@ import 'package:checkout_api/utils/api_base.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:checkout_api/checkout_api.dart';
+import 'package:http/http.dart';
 
 void main() async {
   group("payments", () {
@@ -15,8 +16,8 @@ void main() async {
     String instrumentsUri = "";
     String customersUri = "";
 
-    pubKey = "pk_test_aca36a51-2bd8-4a9b-8706-130312f65b88";
-    secretKey = "sk_test_637952cc-4747-4557-87dc-0729ecf639c1";
+    pubKey = "pk_test_aca36a51-2bd8-4a9b-8706-";
+    secretKey = "sk_test_637952cc-4747-4557-87dc-";
     paymentsUri = "https://api.sandbox.checkout.com/payments";
     tokensUri = "https://api.sandbox.checkout.com/tokens";
     instrumentsUri = "https://api.sandbox.checkout.com/instruments";
@@ -53,6 +54,7 @@ void main() async {
     );
 
     String token = "";
+
     final CreditCard card = CreditCard(
       number: "4242424242424242",
       cvv: "100",
@@ -119,14 +121,13 @@ void main() async {
 
     test("pay", () async {
       final PaymentRequest paymentRequest = PaymentRequest(
-          type: PaymentSourceType.Token,
-          token: token,
-          amount: 20,
-          currency: "SAR",
-          customer: customer,
-          description: "participants payment",
-          reference: "",
-          cardId: '');
+        type: PaymentSourceType.Token,
+        amount: 20,
+        currency: "SAR",
+        customer: customer,
+        description: "participants payment",
+        reference: "",
+      );
 
       final PaymentResponse paymentResponse =
           await paymentsRepository.requestTokenPayment(
@@ -137,6 +138,22 @@ void main() async {
       );
 
       expect(paymentResponse.approved, true);
+    });
+
+    test("id pay", () async {
+      final paymentRequest = PaymentRequest(
+          type: PaymentSourceType.Id,
+          amount: 200,
+          reference: "1q23",
+          description: "a payment",
+          customer: customer,
+          cardId: instrumentId,
+          currency: "SAR");
+
+      final PaymentResponse response = await paymentsRepository
+          .requestIdPayment(paymentRequest: paymentRequest);
+
+      expect(response.approved, true);
     });
   });
 }

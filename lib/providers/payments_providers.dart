@@ -11,9 +11,10 @@ final paymentsUriPvdr = Provider<String>((ref) => "payments");
 final tokensUriPvdr = Provider<String>((ref) => "tokens");
 final instrumentsUriPvdr = Provider<String>((ref) => "instruments");
 final customersUriPvdr = Provider<String>((ref) => "customers");
-final baseUri = Provider<String>((ref) => "https://api.sandbox.checkout.com/");
+final baseUriPvdr =
+    Provider<String>((ref) => "https://api.sandbox.checkout.com/");
 
-final apiBasePvdr = Provider((ref) => ApiBase(ref.read(baseUri)));
+final apiBasePvdr = Provider((ref) => ApiBase(ref.read(baseUriPvdr)));
 
 final paymentsRepoPvdr = Provider(
   (ref) => HttpPaymentsRepository(

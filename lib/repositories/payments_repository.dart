@@ -99,21 +99,21 @@ class HttpPaymentsRepository implements BasePaymentsRepository {
   @override
   Future<PaymentResponse> requestIdPayment(
       {required PaymentRequest paymentRequest}) async {
-    http.Response response = await apiBase.call(
+    dynamic responseMap = await apiBase.call(
       RESTOption.post,
       resource: _payments,
       headers: headers,
       body: paymentRequest.toJson(),
     );
 
-    switch (response.statusCode) {
-      case 201:
-        return PaymentResponse.fromJson(response.body);
+    switch (responseMap["status"] as String) {
+      case "Authorized":
+        return PaymentResponse.fromMap(responseMap);
+      case "Pending":
+        return PaymentResponse3DS.fromMap(responseMap);
 
-      case 202:
-        return PaymentResponse3DS.fromJson(response.body);
       default:
-        return PaymentResponse.fromJson(response.body);
+        return PaymentResponse.fromMap(responseMap);
     }
   }
 }

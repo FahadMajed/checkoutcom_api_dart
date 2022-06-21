@@ -21,7 +21,7 @@ class PaymentRequest {
   PaymentRequest({
     required this.type,
     this.isPayout = false,
-    this.token,
+    this.token = "",
     this.cardId,
     required this.amount,
     required this.reference,
