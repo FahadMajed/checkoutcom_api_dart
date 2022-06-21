@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../lib.dart';
 
 ///Checkout Customer Notifier
+///
 class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
   final HttpCustomersRepository customersRepo;
   final HttpInstrumentRepository instrumentsRepo;

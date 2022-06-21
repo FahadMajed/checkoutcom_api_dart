@@ -33,7 +33,7 @@ abstract class BaseInstrumentRepository {
 
 class HttpInstrumentRepository extends BaseInstrumentRepository {
   final headers;
-  static const instruments = "instruments";
+  static const _instruments = "instruments";
   final ApiBase apiBase;
 
   HttpInstrumentRepository({required this.headers, required this.apiBase});
@@ -43,7 +43,7 @@ class HttpInstrumentRepository extends BaseInstrumentRepository {
       {required InstrumentRequest instrumentRequest}) async {
     //
     Map<String, dynamic> responseMap = await apiBase.call(RESTOption.post,
-        resource: instruments,
+        resource: _instruments,
         headers: headers,
         body: instrumentRequest.toJson());
 
@@ -55,7 +55,7 @@ class HttpInstrumentRepository extends BaseInstrumentRepository {
     //
     await apiBase.call(
       RESTOption.delete,
-      resource: instruments + "/" + id,
+      resource: _instruments + "/" + id,
       headers: headers,
     );
 
@@ -67,7 +67,7 @@ class HttpInstrumentRepository extends BaseInstrumentRepository {
     //
     Map<String, dynamic> responseMap = await apiBase.call(
       RESTOption.get,
-      resource: instruments + "/" + id,
+      resource: _instruments + "/" + id,
       headers: headers,
     );
 
@@ -81,7 +81,7 @@ class HttpInstrumentRepository extends BaseInstrumentRepository {
   }) async {
     Map responseMap = await apiBase.call(
       RESTOption.patch,
-      resource: instruments + "/" + instrumentRequest.id!,
+      resource: _instruments + "/" + instrumentRequest.id!,
       headers: headers,
       body: instrumentRequest.toJson(),
     );

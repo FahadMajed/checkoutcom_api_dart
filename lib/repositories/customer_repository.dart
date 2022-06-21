@@ -15,7 +15,7 @@ abstract class BaseCustomerRepository {
 
 class HttpCustomersRepository extends BaseCustomerRepository {
   final headers;
-  static const customers = "customers";
+  static const _customers = "customers";
   final ApiBase apiBase;
 
   HttpCustomersRepository({required this.headers, required this.apiBase});
@@ -24,7 +24,7 @@ class HttpCustomersRepository extends BaseCustomerRepository {
   Future<String?> createCustomer(Customer customer) async {
     //
     final Map<String, dynamic> responseMap = await apiBase.call(RESTOption.post,
-        resource: customers, headers: headers, body: customer.toJson());
+        resource: _customers, headers: headers, body: customer.toJson());
 
     return Customer.fromMap(responseMap).id;
   }
@@ -33,7 +33,7 @@ class HttpCustomersRepository extends BaseCustomerRepository {
   Future<Customer> getCustomerDetails(String id) async {
     final Map<String, dynamic> responseMap = await apiBase.call(
       RESTOption.get,
-      resource: customers + "/" + id,
+      resource: _customers + "/" + id,
       headers: headers,
     );
 

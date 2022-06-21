@@ -39,7 +39,7 @@ abstract class BasePaymentsRepository {
 class HttpPaymentsRepository implements BasePaymentsRepository {
   final HttpTokensRepository tokensRepo;
   final headers;
-  static const payments = "payments";
+  static const _payments = "payments";
 
   final ApiBase apiBase;
   HttpPaymentsRepository(
@@ -60,7 +60,7 @@ class HttpPaymentsRepository implements BasePaymentsRepository {
 
     Map<String, dynamic> response = await apiBase.call(
       RESTOption.post,
-      resource: payments,
+      resource: _payments,
       headers: headers,
       body: paymentRequest.copyWith(token: token).toJson(),
     );
@@ -89,7 +89,7 @@ class HttpPaymentsRepository implements BasePaymentsRepository {
   Future<PaymentResponse> getPaymentDetails(String id) async {
     http.Response response = await apiBase.call(
       RESTOption.get,
-      resource: payments,
+      resource: _payments,
       headers: headers,
     );
 
@@ -101,7 +101,7 @@ class HttpPaymentsRepository implements BasePaymentsRepository {
       {required PaymentRequest paymentRequest}) async {
     http.Response response = await apiBase.call(
       RESTOption.post,
-      resource: payments,
+      resource: _payments,
       headers: headers,
       body: paymentRequest.toJson(),
     );

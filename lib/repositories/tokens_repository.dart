@@ -19,7 +19,7 @@ abstract class TokensRepository {
 class HttpTokensRepository implements TokensRepository {
   final headers;
   final ApiBase apiBase;
-  static const tokens = "tokens";
+  static const _tokens = "tokens";
 
   HttpTokensRepository({
     required this.headers,
@@ -30,7 +30,7 @@ class HttpTokensRepository implements TokensRepository {
   Future<TokenResponse> requestToken(TokenRequest tokenRequest) async {
     Map responseMap = await apiBase.call(
       RESTOption.post,
-      resource: tokens,
+      resource: _tokens,
       headers: headers,
       body: tokenRequest.toJson(),
     );
