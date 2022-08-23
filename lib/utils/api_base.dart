@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 enum RESTOption { get, post, patch, delete }
 
+///T is repsonse
 class ApiBase {
   final String _baseUrl;
 

@@ -16,8 +16,8 @@ void main() async {
     String instrumentsUri = "";
     String customersUri = "";
 
-    pubKey = "pk_test_aca36a51-2bd8-4a9b-8706-";
-    secretKey = "sk_test_637952cc-4747-4557-87dc-";
+    pubKey = "pk_test_aca36a51-2bd8-4a9b-8706-130312f65b88";
+    secretKey = "sk_test_637952cc-4747-4557-87dc-0729ecf639c1";
     paymentsUri = "https://api.sandbox.checkout.com/payments";
     tokensUri = "https://api.sandbox.checkout.com/tokens";
     instrumentsUri = "https://api.sandbox.checkout.com/instruments";

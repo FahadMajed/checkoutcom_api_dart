@@ -5,18 +5,14 @@ import '../lib.dart';
 ///Checkout Customer Notifier
 ///
 class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
-  final HttpCustomersRepository customersRepo;
-  final HttpInstrumentRepository instrumentsRepo;
-  final HttpTokensRepository tokensRepo;
+  final Checkout checkout;
 
   ///email address, e.g. FirebaseAuth user email
   final String customerId;
   final String name;
 
   CustomerNotifier({
-    required this.customersRepo,
-    required this.instrumentsRepo,
-    required this.tokensRepo,
+    required this.checkout,
     required this.customerId,
     required this.name,
   }) : super(const AsyncValue.loading()) {
@@ -31,10 +27,10 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
   ///tries to fetch customer details using [id], if not found, new customer will be created using [id] as an email address to fetch with it next time.
   Future<void> getCustomerDetails(String id) async {
     try {
-      final customer = await customersRepo.getCustomerDetails(id);
+      final customer = await checkout.getCustomerDetails(id);
 
       final Instrument? defaultInstrument =
-          await instrumentsRepo.getDefaultInstrument(customer.instruments);
+          await checkout.getDefaultInstrument(customer.instruments);
 
       if (mounted) {
         state = AsyncValue.data(
@@ -51,7 +47,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
         instruments: [],
       );
 
-      final customerId = await customersRepo.createCustomer(customer);
+      final customerId = await checkout.createCustomer(customer);
 
       if (mounted) state = AsyncValue.data(customer.copyWith(id: customerId));
     }
@@ -74,7 +70,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
     final tokenRequest =
         TokenRequest(type: PaymentMethod.Card, card: creditCard);
 
-    final tokenResponse = await tokensRepo.requestToken(tokenRequest);
+    final tokenResponse = await checkout.requestToken(tokenRequest);
     return tokenResponse.token;
   }
 
@@ -85,7 +81,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
       customer: customer,
     );
 
-    return await instrumentsRepo.createInstrument(
+    return await checkout.createInstrument(
         instrumentRequest: instrumentRequest);
   }
 
@@ -93,7 +89,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
   Future<void> setInstrumentToDefault(Instrument instrument) async {
     final customer = state.value;
 
-    final updatedInstrument = await instrumentsRepo.updateInstrument(
+    final updatedInstrument = await checkout.updateInstrument(
       instrument: instrument,
       instrumentRequest: InstrumentRequest(
         id: instrument.id,
@@ -113,7 +109,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
   Future<void> deleteInstrument(String id) async {
     final customer = state.value;
 
-    await instrumentsRepo.deleteInstrument(id);
+    await checkout.deleteInstrument(id);
 
     state = AsyncValue.data(
       customer!.copyWith(
@@ -131,7 +127,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
       required InstrumentRequest instrumentRequest}) async {
     final customer = state.value!;
 
-    final updatedInstrument = await instrumentsRepo.updateInstrument(
+    final updatedInstrument = await checkout.updateInstrument(
         instrument: instrument, instrumentRequest: instrumentRequest);
 
     state = AsyncValue.data(

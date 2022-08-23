@@ -29,6 +29,8 @@ abstract class BaseInstrumentRepository {
   Future<void> deleteInstrument(
     String id,
   );
+
+  Future<Instrument?> getDefaultInstrument(List<Instrument> instruments);
 }
 
 class HttpInstrumentRepository extends BaseInstrumentRepository {
@@ -93,6 +95,7 @@ class HttpInstrumentRepository extends BaseInstrumentRepository {
         expiryYear: instrumentRequest.expiryYear);
   }
 
+  @override
   Future<Instrument?> getDefaultInstrument(List<Instrument> instruments) async {
     for (final instrument in instruments) {
       final fetchedInstrument = await getInstrumentDetails(instrument.id);

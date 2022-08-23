@@ -1,41 +1,25 @@
+import 'package:checkout_api/providers/checkout_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../lib.dart';
 
-enum Environment { DEV, PROD }
+enum Environment { dev, prod }
 
 Future<void> mainCommon(Environment env) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await ConfigReader.initialize();
-  String pubKey = "";
-  String secretKey = "";
-  String baseUri = "";
-
-  switch (env) {
-    case Environment.DEV:
-      // pubKey = ConfigReader.getPubKeyDev();
-      // secretKey = ConfigReader.getSecretKeyDev();
-      baseUri = "https://api.sandbox.checkout.com/";
-      break;
-    case Environment.PROD:
-      // pubKey = ConfigReader.getPubKeyProd();
-      // secretKey = ConfigReader.getSecretKeyProd();
-      baseUri = "https://api.checkout.com/";
-      break;
-  }
-
   runApp(
-    ProviderScope(
-      overrides: [
-        //avaialble from package
-        paymentApiPubKeyPvdr.overrideWithValue(pubKey),
-        paymentApiSecretKeyPvdr.overrideWithValue(secretKey),
-        baseUriPvdr.overrideWithValue(baseUri),
-      ],
-      child: const Home(),
-    ),
+    ProviderScope(overrides: [
+      if (env == Environment.dev)
+        checkoutPvdr.overrideWithValue(
+          Checkout(
+            secretKey: 'sanbox-key',
+            publicKey: 'sandbox-key',
+            testing: true,
+          ),
+        )
+    ], child: const Home()),
   );
 }
 
@@ -44,18 +28,11 @@ Future<void> mainCommon(Environment env) async {
 //using the email, to fetch it later with this identifier
 final customerAsyncPvdr =
     StateNotifierProvider<CustomerNotifier, AsyncValue<Customer>>(
-  (ref) {
-    return CustomerNotifier(
-      customersRepo: ref.watch(customersRepoPvdr),
-      instrumentsRepo: ref.watch(instrumentsRepoPvdr),
-      tokensRepo: ref.watch(tokensRepoPvdr),
-      //give it you auth service email
-      //e.g watch(firebaseUser).email
-      customerId: "email",
-      //give it a name
-      name: "",
-    );
-  },
+  (ref) => CustomerNotifier(
+    checkout: ref.watch(checkoutPvdr),
+    customerId: "e.g. firebase_auth.email",
+    name: "",
+  ),
 );
 
 class Home extends ConsumerWidget {
@@ -63,10 +40,12 @@ class Home extends ConsumerWidget {
 
   @override
   Widget build(context, ref) {
-    // now you can access the instruments of the customer and other data
+    final watch = ref.watch;
 
-    final customer = ref.watch(customerAsyncPvdr).value!;
-    final customerNotifier = ref.watch(customerAsyncPvdr.notifier);
+    final checkout = watch(checkoutPvdr);
+
+    final customer = watch(customerAsyncPvdr).value!;
+    final customerNotifier = watch(customerAsyncPvdr.notifier);
 
     return Column(
       children: [
@@ -101,7 +80,7 @@ class Home extends ConsumerWidget {
             },
             child: const Text("Add Card")),
         ElevatedButton(
-            onPressed: () => ref.read(paymentsRepoPvdr).requestIdPayment(
+            onPressed: () => checkout.requestIdPayment(
                 paymentRequest: PaymentRequest(
                     type: PaymentSourceType.Id,
                     amount: 200,
@@ -125,12 +104,14 @@ class CreditCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Text(instrument.last4),
-      const SizedBox(
-        height: 8,
-      ),
-      Text(instrument.isDefault.toString())
-    ]);
+    return Column(
+      children: [
+        Text(instrument.last4),
+        const SizedBox(
+          height: 8,
+        ),
+        Text(instrument.isDefault.toString())
+      ],
+    );
   }
 }

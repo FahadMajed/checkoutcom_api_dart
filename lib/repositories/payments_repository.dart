@@ -17,7 +17,7 @@ abstract class BasePaymentsRepository {
   /// pay using The Checkout.com token (e.g., a card or digital wallet token)
   Future<PaymentResponse> requestTokenPayment(
       {required PaymentRequest paymentRequest,
-      ApplePayTokenData applePayTokenData,
+      ApplePayTokenData? applePayTokenData,
       required PaymentMethod method});
 
   ///Returns the details of the payment with the specified identifier string.
@@ -37,7 +37,7 @@ abstract class BasePaymentsRepository {
 }
 
 class HttpPaymentsRepository implements BasePaymentsRepository {
-  final HttpTokensRepository tokensRepo;
+  final BaseTokensRepository tokensRepo;
   final headers;
   static const _payments = "payments";
 

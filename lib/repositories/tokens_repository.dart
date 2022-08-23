@@ -8,7 +8,7 @@ import '../models/tokens/token_response.dart';
 ///(or their tokenized form in a digital wallet) that you can later
 ///use to request a payment,
 /// without you having to process or store any sensitive information.
-abstract class TokensRepository {
+abstract class BaseTokensRepository {
   ///Exchange a digital wallet payment token or card details
   ///for a reference token that can be used later to request a card payment.
   /// Tokens are single use and expire after 15 minutes.
@@ -16,7 +16,7 @@ abstract class TokensRepository {
   Future<TokenResponse> requestToken(TokenRequest tokenRequest);
 }
 
-class HttpTokensRepository implements TokensRepository {
+class HttpTokensRepository implements BaseTokensRepository {
   final headers;
   final ApiBase apiBase;
   static const _tokens = "tokens";

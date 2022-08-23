@@ -7,7 +7,7 @@ you can easily create your sandbox account for testing.
 
 ## Usage
 
-The package has FOUR repositories.
+The package implements the following apis:
 
 1. Customers
 2. Payments
@@ -16,8 +16,8 @@ The package has FOUR repositories.
 
 ```dart
 
-//initialize api base
-final apiBase = ApiBase("https://api.sandbox.checkout.com/");
+//initialize checkout
+final checkout = Checkout(secretKey: 'secretKey', publicKey: 'publicKey');
 
 //create customer
 Customer customer = Customer(
@@ -27,12 +27,12 @@ Customer customer = Customer(
       name: "Saleh",
     );
     
-final customerId = await customersRepository.createCustomer(customer);
+final customerId = await checkout.createCustomer(customer);
 
 customer = customer.copyWith(id: customerId);
 
 //fetch customer
-customer = await getCustomerDetails(customer.email) 
+customer = await checkout.getCustomerDetails(customer.email) 
 // both email and id can be used
 
 //create instrument for customer
@@ -47,14 +47,7 @@ customer = await getCustomerDetails(customer.email)
       last4: "4242",
       scheme: "visa",
     );
-//2. tokenize the card
-final HttpTokensRepository tokensRepository = HttpTokensRepository(
-      headers: {
-        'Content-Type': 'Application/json',
-        'Authorization': pubKey,
-      },
-      apiBase: apiBase,
-    );
+
 
 String token = "";
 
@@ -62,17 +55,13 @@ final TokenRequest tokenRequest =
           TokenRequest(type: PaymentMethod.Card, card: card);
 
 final TokenResponse tokenResponse =
-          await tokensRepository.requestToken(tokenRequest);
+          await checkout.requestToken(tokenRequest);
 
 token = tokenResponse.token;
       
 //3. add instrument to customer
   
-final HttpInstrumentRepository instrumentRepository =
-        HttpInstrumentRepository(
-      headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
-      apiBase: apiBase,
-    );
+
     
 final InstrumentRequest instrumentRequest = InstrumentRequest(
         type: PaymentSourceType.Token,
@@ -80,20 +69,15 @@ final InstrumentRequest instrumentRequest = InstrumentRequest(
         customer: customer,
       );
 
-Instrument instrument = await instrumentRepository.createInstrument(
+Instrument instrument = await checkout.createInstrument(
           instrumentRequest: instrumentRequest);
           
 //get instrument detials
 Instrument instrument =
-          await instrumentRepository.getInstrumentDetails(instrument.instrumentId);
+          await checkout.getInstrumentDetails(instrument.instrumentId);
           
           
 //pay with token
-final HttpPaymentsRepository paymentsRepository = HttpPaymentsRepository(
-      headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
-      tokensRepo: tokensRepository,
-      apiBase: apiBase,
-    );
     
 final PaymentRequest paymentRequest = PaymentRequest(
         type: PaymentSourceType.Token,
@@ -105,7 +89,7 @@ final PaymentRequest paymentRequest = PaymentRequest(
       );
 
 final PaymentResponse paymentResponse =
-          await paymentsRepository.requestTokenPayment(
+          await checkout.requestTokenPayment(
         paymentRequest: paymentRequest,
         //for tokenizing
         card: card,
@@ -123,73 +107,54 @@ final paymentRequest = PaymentRequest(
           cardId: instrumentId,
           currency: "SAR");
 
-final PaymentResponse response = await paymentsRepository
+final PaymentResponse response = await checkout
           .requestIdPayment(paymentRequest: paymentRequest);
 
 
 ```
 ## Additional information
 
-for users who are familiar with riverpod, the package has a CustomerNotifer class that handles all the state management for you, also a providers for each repository that inject the dependenies.
+not all operations are implemeneted, for example, refunds. 
+you can check Checkout class implementation to see what is covered.
 
-##### Example with Riverpod
+##### Example with Riverpod and Flavors
 
 ``` dart 
-enum Environment { DEV, PROD }
+
+//Singleton
+final checkoutPvdr =
+    Provider((ref) => Checkout(secretKey: 'your key', publicKey: 'your key',));
+
+
+enum Environment { dev, prod }
 
 Future<void> mainCommon(Environment env) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await ConfigReader.initialize();
-  String pubKey = "";
-  String secretKey = "";
-  String baseUri = "";
-
-  switch (env) {
-    case Environment.DEV:
-      // pubKey = ConfigReader.getPubKeyDev();
-      // secretKey = ConfigReader.getSecretKeyDev();
-      baseUri = "https://api.sandbox.checkout.com/";
-      break;
-    case Environment.PROD:
-      // pubKey = ConfigReader.getPubKeyProd();
-      // secretKey = ConfigReader.getSecretKeyProd();
-      baseUri = "https://api.checkout.com/";
-      break;
-  }
-
   runApp(
-    ProviderScope(
-      overrides: [
-        //avaialble from package
-        paymentApiPubKeyPvdr.overrideWithValue(pubKey),
-        paymentApiSecretKeyPvdr.overrideWithValue(secretKey),
-        baseUriPvdr.overrideWithValue(baseUri),
-      ],
-      child: const Home(),
-    ),
+    ProviderScope(overrides: [
+      if (env == Environment.dev)
+        checkoutPvdr.overrideWithValue(
+          Checkout(
+            secretKey: 'sanbox-key',
+            publicKey: 'sandbox-key',
+            testing: true,
+          ),
+        )
+    ], child: const Home()),
   );
 }
-
-
 
 //create the customer provider
 //if the customer was not register, the notifer will create a new customer
 //using the email, to fetch it later with this identifier
 final customerAsyncPvdr =
     StateNotifierProvider<CustomerNotifier, AsyncValue<Customer>>(
-  (ref) {
-    return CustomerNotifier(
-      customersRepo: ref.watch(customersRepoPvdr),
-      instrumentsRepo: ref.watch(instrumentsRepoPvdr),
-      tokensRepo: ref.watch(tokensRepoPvdr),
-      //give it you auth service email
-      //e.g watch(firebaseUser).email
-      customerId: "email",
-      //give it a name
-      name: "",
-    );
-  },
+  (ref) => CustomerNotifier(
+    checkout: ref.watch(checkoutPvdr),
+    customerId: "e.g. firebase_auth.email",
+    name: "",
+  ),
 );
 
 class Home extends ConsumerWidget {
@@ -197,10 +162,12 @@ class Home extends ConsumerWidget {
 
   @override
   Widget build(context, ref) {
-    // now you can access the instruments of the customer and other data
+    final watch = ref.watch;
 
-    final customer = ref.watch(customerAsyncPvdr).value!;
-    final customerNotifier = ref.watch(customerAsyncPvdr.notifier);
+    final checkout = watch(checkoutPvdr);
+
+    final customer = watch(customerAsyncPvdr).value!;
+    final customerNotifier = watch(customerAsyncPvdr.notifier);
 
     return Column(
       children: [
@@ -235,7 +202,7 @@ class Home extends ConsumerWidget {
             },
             child: const Text("Add Card")),
         ElevatedButton(
-            onPressed: () => ref.read(paymentsRepoPvdr).requestIdPayment(
+            onPressed: () => checkout.requestIdPayment(
                 paymentRequest: PaymentRequest(
                     type: PaymentSourceType.Id,
                     amount: 200,
@@ -259,25 +226,18 @@ class CreditCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Text(instrument.last4),
-      const SizedBox(
-        height: 8,
-      ),
-      Text(instrument.isDefault.toString())
-    ]);
+    return Column(
+      children: [
+        Text(instrument.last4),
+        const SizedBox(
+          height: 8,
+        ),
+        Text(instrument.isDefault.toString())
+      ],
+    );
   }
 }
 
-
-
-//also note that the repositories instances will be created automatiically based on
-//your environement, no need to spicify the headers or the apiBase,
-// just override the keys providers. you can access them like this:
-// 
-ref.read(paymentsRepoPvdr).requestPayment(*params);
-ref.read(customersRepoPvdr).createCustomer(*params);
-// same for tokens and instruments
 
 ```
 Rememeber to understand the code before coping it, this is just a demo and not well orgnized and architectured!
