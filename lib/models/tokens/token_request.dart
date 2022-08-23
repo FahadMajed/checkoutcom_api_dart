@@ -16,7 +16,7 @@ class TokenRequest {
   });
 
   Map<String, dynamic> toMap() {
-    if (card!.last4!.isNotEmpty) {
+    if (card?.last4?.isNotEmpty ?? false) {
       return {
         'type': type.name.toLowerCase(),
         ...card!.toTokenMap(),
@@ -24,7 +24,7 @@ class TokenRequest {
     } else {
       return {
         'type': type.name.toLowerCase(),
-        'token_data': walletTokenData!.toMap(),
+        'token_data': walletTokenData?.toMap(),
       };
     }
   }

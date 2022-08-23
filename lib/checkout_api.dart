@@ -1,7 +1,6 @@
 library checkout_api;
 
 import 'package:checkout_api/lib.dart';
-import 'package:checkout_api/utils/api_base.dart';
 
 const baseUrl = "https://api.checkout.com/";
 const testingUrl = "https://api.sandbox.checkout.com/";
@@ -61,7 +60,7 @@ class Checkout
     if (paymentsRepository == null) {
       this.paymentsRepository = HttpPaymentsRepository(
           apiBase: testing ? ApiBase(testingUrl) : ApiBase(testingUrl),
-          tokensRepo: tokensRepository!,
+          tokensRepo: this.tokensRepository,
           headers: secretHeaders);
     } else {
       this.paymentsRepository = paymentsRepository;
@@ -122,11 +121,13 @@ class Checkout
   @override
   Future<PaymentResponse> requestTokenPayment(
           {required PaymentRequest paymentRequest,
+          CreditCard? card,
           ApplePayTokenData? applePayTokenData,
-          required PaymentMethod method}) =>
-      paymentsRepository.requestTokenPayment(
+          required PaymentMethod method}) async =>
+      await paymentsRepository.requestTokenPayment(
         paymentRequest: paymentRequest,
         method: method,
+        card: card,
         applePayTokenData: applePayTokenData,
       );
 }

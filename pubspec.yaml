@@ -1,5 +1,5 @@
 name: checkout_api
-description: A package that utilizes checkout.com api.
+description: A package that utilizes checkout.com api, you can use most of checkout api operations using single instance, with strongly-typed models for requests and responses, .
 version: 0.0.2
 homepage: https://github.com/FahadMajed/checkoutcom_api/
 

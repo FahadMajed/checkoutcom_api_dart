@@ -1,8 +1,6 @@
-import 'package:checkout_api/providers/checkout_provider.dart';
+import 'package:checkout_api/lib.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../lib.dart';
 
 enum Environment { dev, prod }
 
@@ -82,7 +80,7 @@ class Home extends ConsumerWidget {
         ElevatedButton(
             onPressed: () => checkout.requestIdPayment(
                 paymentRequest: PaymentRequest(
-                    type: PaymentSourceType.Id,
+                    type: PaymentSourceType.id,
                     amount: 200,
                     reference: "1q23",
                     description: "a payment",

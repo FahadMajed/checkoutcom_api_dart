@@ -1,4 +1,3 @@
-import 'package:checkout_api/utils/api_base.dart';
 import 'package:http/http.dart' as http;
 
 import '../lib.dart';
@@ -17,6 +16,7 @@ abstract class BasePaymentsRepository {
   /// pay using The Checkout.com token (e.g., a card or digital wallet token)
   Future<PaymentResponse> requestTokenPayment(
       {required PaymentRequest paymentRequest,
+      CreditCard? card,
       ApplePayTokenData? applePayTokenData,
       required PaymentMethod method});
 

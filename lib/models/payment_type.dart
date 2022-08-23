@@ -1,2 +1,3 @@
-enum PaymentMethod { ApplePay, Card, GooglePay }
-enum PaymentSourceType { Id, Token }
+enum PaymentMethod { applepay, card, googlepay }
+
+enum PaymentSourceType { id, token }

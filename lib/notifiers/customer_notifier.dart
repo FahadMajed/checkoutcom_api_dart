@@ -68,7 +68,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
 
   Future<String> _requestToken(CreditCard creditCard) async {
     final tokenRequest =
-        TokenRequest(type: PaymentMethod.Card, card: creditCard);
+        TokenRequest(type: PaymentMethod.card, card: creditCard);
 
     final tokenResponse = await checkout.requestToken(tokenRequest);
     return tokenResponse.token;
@@ -76,7 +76,7 @@ class CustomerNotifier extends StateNotifier<AsyncValue<Customer>> {
 
   Future<Instrument> _createInstrument(String token, Customer customer) async {
     final instrumentRequest = InstrumentRequest(
-      type: PaymentSourceType.Token,
+      type: PaymentSourceType.token,
       token: token,
       customer: customer,
     );

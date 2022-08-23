@@ -1,5 +1,4 @@
 import 'package:checkout_api/utils/api_base.dart';
-import 'package:http/http.dart' as http;
 
 import '../models/tokens/token_request.dart';
 import '../models/tokens/token_response.dart';

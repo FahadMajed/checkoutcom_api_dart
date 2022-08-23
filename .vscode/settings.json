@@ -1,7 +1,37 @@
+
 {
+    "editor.fontSize": 14,
+    "dart.previewUpdateImportsOnRename": true,
+  
+    "explorer.fileNesting.enabled": true,
+    "editor.codeActionsOnSave": {
+            "source.organizeImports": true,
+            "source.fixAll": true,
+            
+    },
     "cSpell.words": [
+        "Andriod",
+        "Announ",
+        "applepay",
+        "ARGB",
+        "borderless",
+        "Botton",
+        "buttom",
+        "Colour",
         "Cupertino",
+        "emptystate",
+        "enlocal",
+        "Enrolments",
+        "Firestore",
+        "LTRB",
+        "Menue",
+        "Outter",
+        "preffered",
         "Pvdr",
-        "riverpod"
+        "researchs",
+        "RGBO",
+        "riverpod",
+        "unfocus"
     ]
+    
 }

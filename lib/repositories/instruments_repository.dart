@@ -2,10 +2,6 @@
 Create a payment instrument that you can later use as the source or destination 
 for one or more payments
 */
-import 'dart:convert';
-
-import 'package:checkout_api/utils/api_base.dart';
-import 'package:http/http.dart' as http;
 
 import '../lib.dart';
 

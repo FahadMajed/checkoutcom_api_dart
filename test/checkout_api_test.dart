@@ -1,33 +1,20 @@
 import 'dart:math';
 
 import 'package:checkout_api/lib.dart';
-import 'package:checkout_api/utils/api_base.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:checkout_api/checkout_api.dart';
-import 'package:http/http.dart';
 
 void main() async {
   group("payments", () {
     String pubKey = "";
     String secretKey = "";
-    String paymentsUri = "";
-    String tokensUri = "";
-    String instrumentsUri = "";
-    String customersUri = "";
 
     pubKey = "pk_test_aca36a51-2bd8-4a9b-8706-130312f65b88";
     secretKey = "sk_test_637952cc-4747-4557-87dc-0729ecf639c1";
-    paymentsUri = "https://api.sandbox.checkout.com/payments";
-    tokensUri = "https://api.sandbox.checkout.com/tokens";
-    instrumentsUri = "https://api.sandbox.checkout.com/instruments";
-    customersUri = "https://api.sandbox.checkout.com/customers";
 
-    final apiBase = ApiBase("https://api.sandbox.checkout.com/");
-
-    final customersRepository = HttpCustomersRepository(
-      headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
-      apiBase: apiBase,
+    final checkout = Checkout(
+      secretKey: secretKey,
+      publicKey: pubKey,
+      testing: true,
     );
 
     final randomNumber = Random().nextInt(3000000);
@@ -39,19 +26,11 @@ void main() async {
     );
 
     test("add customer", () async {
-      final customerId = await customersRepository.createCustomer(customer);
+      final customerId = await checkout.createCustomer(customer);
 
       customer = customer.copyWith(id: customerId);
       expect(customer.id!.isNotEmpty, true);
     });
-
-    final HttpTokensRepository tokensRepository = HttpTokensRepository(
-      headers: {
-        'Content-Type': 'Application/json',
-        'Authorization': pubKey,
-      },
-      apiBase: apiBase,
-    );
 
     String token = "";
 
@@ -65,63 +44,49 @@ void main() async {
     );
     test("tokenize card", () async {
       final TokenRequest tokenRequest =
-          TokenRequest(type: PaymentMethod.Card, card: card);
+          TokenRequest(type: PaymentMethod.card, card: card);
 
       final TokenResponse tokenResponse =
-          await tokensRepository.requestToken(tokenRequest);
+          await checkout.requestToken(tokenRequest);
 
       token = tokenResponse.token;
       expect(token.isNotEmpty, true);
     });
 
-    final HttpInstrumentRepository instrumentRepository =
-        HttpInstrumentRepository(
-      headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
-      apiBase: apiBase,
-    );
-
     String instrumentId = "";
 
     test("add instrument to customer", () async {
       final InstrumentRequest instrumentRequest = InstrumentRequest(
-        type: PaymentSourceType.Token,
+        type: PaymentSourceType.token,
         token: token,
         customer: customer,
       );
 
-      Instrument instrument = await instrumentRepository.createInstrument(
-          instrumentRequest: instrumentRequest);
+      Instrument instrument =
+          await checkout.createInstrument(instrumentRequest: instrumentRequest);
       instrumentId = instrument.id;
       expect(instrument.last4, "4242");
-      expect(instrument.type, PaymentMethod.Card);
+      expect(instrument.type, PaymentMethod.card);
     });
 
     test("get instruments details", () async {
-      Instrument instrument =
-          await instrumentRepository.getInstrumentDetails(instrumentId);
+      Instrument instrument = await checkout.getInstrumentDetails(instrumentId);
 
       expect(instrument.last4, "4242");
-      expect(instrument.type, PaymentMethod.Card);
+      expect(instrument.type, PaymentMethod.card);
     });
 
     test("get customer details", () async {
-      final customerDetails =
-          await customersRepository.getCustomerDetails(customer.id!);
+      final customerDetails = await checkout.getCustomerDetails(customer.id!);
 
       expect(customerDetails.id, customer.id);
       expect(customerDetails.instruments.isNotEmpty, true);
       expect(customerDetails.instruments.first.last4, "4242");
     });
 
-    final HttpPaymentsRepository paymentsRepository = HttpPaymentsRepository(
-      headers: {'Content-Type': 'Application/json', 'Authorization': secretKey},
-      tokensRepo: tokensRepository,
-      apiBase: apiBase,
-    );
-
     test("pay", () async {
       final PaymentRequest paymentRequest = PaymentRequest(
-        type: PaymentSourceType.Token,
+        type: PaymentSourceType.token,
         amount: 20,
         currency: "SAR",
         customer: customer,
@@ -130,11 +95,11 @@ void main() async {
       );
 
       final PaymentResponse paymentResponse =
-          await paymentsRepository.requestTokenPayment(
+          await checkout.requestTokenPayment(
         paymentRequest: paymentRequest,
         //for tokenizing
         card: card,
-        method: PaymentMethod.Card,
+        method: PaymentMethod.card,
       );
 
       expect(paymentResponse.approved, true);
@@ -142,7 +107,7 @@ void main() async {
 
     test("id pay", () async {
       final paymentRequest = PaymentRequest(
-          type: PaymentSourceType.Id,
+          type: PaymentSourceType.id,
           amount: 200,
           reference: "1q23",
           description: "a payment",
@@ -150,8 +115,8 @@ void main() async {
           cardId: instrumentId,
           currency: "SAR");
 
-      final PaymentResponse response = await paymentsRepository
-          .requestIdPayment(paymentRequest: paymentRequest);
+      final PaymentResponse response =
+          await checkout.requestIdPayment(paymentRequest: paymentRequest);
 
       expect(response.approved, true);
     });
