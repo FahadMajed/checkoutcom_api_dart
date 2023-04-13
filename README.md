@@ -14,9 +14,9 @@ To use checkout_api in your Dart project, add the following dependency to your p
 
 ```yaml
 dependencies:
-  checkout_com_api:
+  checkout_api:
     git:
-      url: git://github.com/FahadMajed/checkout_com_api.git
+      url: git://github.com/FahadMajed/checkoutcom_api_dart.git
 ```
 
 Then, import the checkout_api library in your Dart code:
@@ -36,12 +36,17 @@ var response = await checkout.requestToken(tokenRequest);
 
 The methods available in the Checkout class are:
 
+- `createCustomer(customer)`: Create a new customer.
 - `getCustomerDetails(id)`: Get details for a specific customer by ID.
 - `requestToken(tokenRequest)`: Request a new token.
 - `createInstrument(instrumentRequest)`: Create a new instrument.
 - `getInstrumentDetails(instrumentId)`: Get details for a specific instrument by ID.
+- `updateInstrument(instrument, instrumentRequest)`: Update an existing instrument with a new request.
+- `deleteInstrument(id)`: Delete an existing instrument by ID.
+- `getDefaultInstrument(instruments)`: Get the default instrument from a list of instruments.
 - `requestTokenPayment(paymentRequest, card, paymentMethod)`: Request a new payment with a card or payment method token.
 - `requestIdPayment(paymentRequest)`: Request a new payment with a previously created card or payment method ID.
+- `getPaymentDetails(id)`: Get details for a specific payment by ID.
 
 For more detailed usage examples, see the examples directory in this repository.
 
