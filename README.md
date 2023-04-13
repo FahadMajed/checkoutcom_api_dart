@@ -1,9 +1,7 @@
-Thank you for providing the updated details. Here's an updated readme.md file for your Dart package for the Checkout.com API:
 
-```
-# checkout_com_api
+# Checkout API
 
-checkout_com_api is a Dart package for interacting with the Checkout.com API. It provides a simple and intuitive interface for making API requests and handling responses.
+checkout_api is a Dart package for interacting with the Checkout.com API. It provides a simple and intuitive interface for making API requests and handling responses.
 
 ## Features
 
