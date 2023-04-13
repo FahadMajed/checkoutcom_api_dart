@@ -17,7 +17,6 @@ dependencies:
   checkout_com_api:
     git:
       url: git://github.com/FahadMajed/checkout_com_api.git
-      ref: main
 ```
 
 Then, import the checkout_api library in your Dart code:
